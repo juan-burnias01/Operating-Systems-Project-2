@@ -1,0 +1,57 @@
+/*   Q1     */
+
+Pros of using the struct of function pointers
+
+Modularity: Allows for clear separation of concerns and modular design.
+Flexibility: Enables dynamic dispatch and different implementations based on conditions or configurations.
+Extensibility: Makes it easier to add new functionality or modify existing behavior.
+Cons:
+
+Indirection and Performance: Introduces a slight overhead due to function pointer dereferencing.
+When to use this approach
+
+Use it in modular systems, runtime-configurable scenarios, and plug-in systems.
+When not to use this approach
+
+For simple and small-scale projects where modularity and configurability are not necessary.
+In performance-critical applications where function pointer indirection impacts performance significantly.
+
+/*   Q2     */
+
+In this project, several synchronization constructs were implemented to mediate the admission of threads to the scheduler queue and ensure that only the scheduled thread would run at any given time. Here's a brief description of the synchronization constructs used:
+
+Semaphores: Semaphores were used to control the access to shared resources. The cpu_sem semaphore was used to ensure that only one thread (either the short-term scheduler or the long-term scheduler) could access the CPU at a time. The process threads had to wait on the cpu_sem semaphore until they were given access.
+
+Mutex Locks: Mutex locks were used to achieve mutual exclusion and protect critical sections of code. They were used when manipulating the scheduler queue, such as adding or removing processes from the queue, to prevent concurrent access and ensure data consistency.
+
+Condition Variables: Condition variables were used to implement thread synchronization and signaling. The process_available condition variable was used by the short-term scheduler to wait until a process was available in the scheduler queue. The long-term scheduler signaled this condition variable when a process arrived in the queue.
+
+/*   Q3     */
+
+
+The call to sched_ops->wait_for_queue(queue) in the short_term_scheduler() function does matter for the correctness of the program. It ensures that the scheduler waits until there is at least one ready process in the queue before proceeding with the scheduling. If the call to wait_for_queue() returned right away without actually waiting for a process, it could result in scheduling a process that is not ready, leading to incorrect behavior.
+
+From a performance perspective, if the wait_for_queue() function returned immediately without waiting, it would result in unnecessary CPU cycles being consumed by the short_term_scheduler() thread. It would constantly check for a ready process in the queue even if there isn't one, causing unnecessary overhead. By waiting for a process to be available, the short_term_scheduler() can be more efficient by only scheduling processes when they are ready, improving performance.
+
+In summary, while the wait_for_queue() function is crucial for correctness, it also plays a role in performance optimization by allowing the scheduler to wait for a ready process instead of constantly checking for availability.
+
+/*   Q4     */
+
+The use of the extern keyword in the declaration of variables in scheduler.h is used to indicate that the variables are defined in another source file. This allows multiple source files to access and share the same global variables.
+
+If the variables were not declared as extern, each source file that includes scheduler.h would have its own separate copy of those variables. This means that changes made to the variables in one source file would not be reflected in other source files, leading to inconsistent and incorrect behavior.
+
+If the variables were not declared with extern in any file, each source file would treat them as separate variables, leading to multiple instances of the same variable. This would result in duplication of data and could lead to conflicts and inconsistent behavior.
+
+By using the extern keyword, we ensure that there is only one instance of each variable across multiple source files, allowing them to share the same data and maintain consistency.
+
+/*   Q5     */
+
+
+To demonstrate the "convoy" effect in the current implementation of the project, where a large compute-bound job slows down all other jobs in a FIFO scheduled system,the following can be modified:
+
+Adjust the service times of the processes: Introduce a long-running compute-bound process with a significantly larger service time compared to other processes. This can be done by assigning a higher value to the serviceTime field of the corresponding process.
+
+Modify the scheduling algorithm: Instead of using FIFO (First-In-First-Out) scheduling, switch to a Round Robin scheduling algorithm with a smaller time slice. This can be done by modifying the sched_queue_t structure and associated functions to implement Round Robin scheduling.
+
+Introduce I/O bound processes: Create additional processes that are I/O bound, meaning they frequently perform I/O operations and yield the CPU voluntarily. These processes will demonstrate the benefits of Round Robin scheduling by allowing other processes to execute in between their I/O operations.
